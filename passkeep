@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+
+import database
+import input
+import crypto
+
+db = database.load() if database.is_exist() else database.create()
