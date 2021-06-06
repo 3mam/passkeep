@@ -9,7 +9,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -a, --add             add item or login to database
   -l LOGIN, --login LOGIN
-                        login bind to item
+                        login related to item
   -g, --generate        generate password
   -p, --password        edit password
   -r, --read            read password

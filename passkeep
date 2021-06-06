@@ -38,7 +38,7 @@ def main():
     parser.add_argument('-a', '--add', action='store_true',
                         help='add item or login to database')
     parser.add_argument('-l', '--login', action='store', type=str,
-                        help='login bind to item')
+                        help='login related to item')
     parser.add_argument('-g', '--generate', action='store_true',
                         help='generate password')
     parser.add_argument('-p', '--password', action='store_true',
