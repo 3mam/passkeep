@@ -66,7 +66,15 @@ class DataBase:
             return self.get_item(name)
         except:
             print(f'{name} exist')
-            return -1
+            return 0
+
+    def edit_item(self, name, new_name):
+        id = self.get_item_id(name)
+        if id:
+            self._query.execute(
+                'UPDATE items SET name=? WHERE id=?', (new_name, id))
+            self._connect.commit()
+            print(f'{name} is now {new_name} in item')
 
     def get_item_id(self, name):
         try:
@@ -74,21 +82,20 @@ class DataBase:
                 'SELECT id FROM items WHERE name=?', (name,)).fetchone()[0]
         except:
             print(f'item {name} not exist')
-            return -1
+            return 0
 
-    def create_account(self, item_name, login):
+    def create_account(self, item, login):
+        item_id = self.get_item_id(item)
         try:
-            item_id = self.create_item(item_name)
-            if item_id == -1:
-                item_id = self.get_item_id(item_name)
-            self._query.execute(
-                'INSERT INTO accounts (login, item_id) VALUES (?, ?)', (login, item_id))
-            self._connect.commit()
-            print(f'create account {login} in {item_name}')
-            return self.get_account_id(item_name, login)
+            if item_id:
+                self._query.execute(
+                    'INSERT INTO accounts (login, item_id) VALUES (?, ?)', (login, item_id))
+                self._connect.commit()
+                print(f'create account {login} in {item}')
+                return self.get_account_id(item, login)
         except:
-            print(f'login {login} in item {item_name} exist')
-            return -1
+            print(f'login {login} in item {item} exist')
+            return 0
 
     def get_account_id(self, item, login):
         try:
@@ -97,12 +104,21 @@ class DataBase:
                 'SELECT id FROM accounts WHERE login=? AND item_id=?', (login, item_id)).fetchone()[0]
         except:
             print(f'login {login} not exist')
-            return -1
+            return 0
+
+    def edit_account(self, item, login, new_name):
+        item_id = self.get_item_id(item)
+        account_id = self.get_account_id(item, login)
+        if item_id and account_id:
+            self._query.execute(
+                'UPDATE accounts SET login=? WHERE id=? AND item_id=?', (new_name, account_id, item_id))
+            self._connect.commit()
+            print(f'login {login} in {item} is now {new_name}')
 
     def edit_password(self, item: str, login: str, password: bytearray):
         item_id = self.get_item_id(item)
         account_id = self.get_account_id(item, login)
-        if item_id != -1 and account_id != -1:
+        if item_id and account_id:
             self._query.execute(
                 'UPDATE accounts SET password=? WHERE id=? AND item_id=?', (password, account_id, item_id))
             self._connect.commit()

@@ -7,12 +7,13 @@ import argparse
 
 
 def arg_add_login(db: database.DataBase, args):
+    if db.create_account(args.item, args.login) == 0:
+        return
     main_password = input.enter_password()
     key, password_ok = db.is_password_correct(main_password)
     if password_ok:
         password = crypto.generate_password() if args.generate else input.enter_new_password()
-        if db.create_account(args.add, args.login) != -1:
-            db.edit_password(args.add, args.login, key.encrypt(password))
+        db.edit_password(args.item, args.login, key.encrypt(password))
 
 
 def main():
@@ -20,17 +21,30 @@ def main():
 
     parser = argparse.ArgumentParser(
         prog='passkeep', description='passkeep is tool to store and manage passwords')
-    parser.add_argument('-a', '--add', action='store', type=str,
-                        help='add item to database')
+    parser.add_argument('-a', '--add', action='store_true',
+                        help='add item or login to database')
     parser.add_argument('-l', '--login', action='store', type=str,
                         help='login bind to item')
     parser.add_argument('-g', '--generate', action='store_true',
                         help='generate password')
+    parser.add_argument('-i', '--item', action='store', type=str,
+                        help='item name')
+    parser.add_argument('-e', '--edit', action='store', type=str,
+                        help='edit item, login or password')
     args = parser.parse_args()
-    if args.add and args.login:
-        arg_add_login(db, args)
+    if args.add:
+        if args.login and args.item:
+            db.create_item(args.item)
+            arg_add_login(db, args)
+        elif args.item:
+            db.create_item(args.item)
     elif args.add:
         db.create_item(args.add)
+    elif args.edit:
+        if args.item and args.login:
+            db.edit_account(args.item, args.login, args.edit)
+        elif args.item:
+            db.edit_item(args.item, args.edit)
     else:
         print(parser.print_help())
 
