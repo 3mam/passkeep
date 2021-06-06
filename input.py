@@ -7,4 +7,4 @@ def enter_new_password():
 
 
 def enter_password():
-    return bytearray(getpass.getpass('enter password:'), 'utf-8')
+    return bytearray(getpass.getpass('enter main password:'), 'utf-8')
