@@ -72,8 +72,10 @@ class DataBase:
                 'INSERT INTO accounts (login, password, item_id) VALUES (?, ?, ?)', (login, password, item_id))
             self._connect.commit()
             print(f'create account {login} in {item_name}')
+            return self.get_account_id(item_name, login)
         except:
             print(f'login {login} in item {item_name} exist')
+            return -1
 
     def get_account_id(self, item, login):
         try:

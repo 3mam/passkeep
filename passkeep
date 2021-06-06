@@ -3,5 +3,27 @@
 import database
 import input
 import crypto
+import argparse
 
 db = database.load() if database.is_exist() else database.create()
+
+parser = argparse.ArgumentParser(
+    prog='passkeep', description='passkeep is tool to store and manage passwords')
+parser.add_argument('-a', '--add', action='store', type=str,
+                    help='add item to database')
+parser.add_argument('-l', '--login', action='store', type=str,
+                    help='login bind to item')
+parser.add_argument('-g', '--generate', action='store_true',
+                    help='generate password')
+args = parser.parse_args()
+if args.add and args.login:
+    if args.generate:
+        password = crypto.generate_password()
+        if db.create_account(args.add, args.login, password) != -1:
+            print(f'generated password: {password}')
+    else:
+        db.create_account(args.add, args.login, input.enter_new_password())
+elif args.add:
+    db.create_item(args.add)
+else:
+    print(parser.print_help())
