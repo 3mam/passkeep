@@ -1,9 +1,9 @@
 simple cli app for manager password write in python
-
-dependencies:
->pip install pycryptodome
->pip install pyperclip
-
+```
+dependencies
+  pip install pycryptodome
+  pip install pyperclip
+```
 ```
 optional arguments:
   -h, --help            show this help message and exit
