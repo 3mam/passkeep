@@ -1,5 +1,3 @@
-from array import array
-from os import access, error, set_blocking
 import sqlite3
 import input
 import crypto
