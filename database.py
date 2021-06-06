@@ -1,5 +1,5 @@
 from array import array
-from os import error, set_blocking
+from os import access, error, set_blocking
 import sqlite3
 import input
 import crypto
@@ -32,17 +32,30 @@ class DataBase:
 
         return self
 
-    def is_password_correct(self, password):
+    def get_token(self) -> bytearray:
         token = self._query.execute(
             'SELECT value FROM settings WHERE name="token"').fetchone()[0]
+        return token
+
+    def get_salt(self) -> bytearray:
         salt = self._query.execute(
             'SELECT value FROM settings WHERE name="salt"').fetchone()[0]
-        key = crypto.Key(password, salt)
+        return salt
+
+    def is_password_correct(self, password: bytearray):
+        key = crypto.Key(password, self.get_salt())
+        token = self.get_token()
         try:
             decrypt_token = key.decrypt(token).decode('utf-8')
-            return decrypt_token == 'this is test token'
+            is_ok = decrypt_token == 'this is test token'
+            if is_ok:
+                print('access granted')
+            else:
+                print('wrong password')
+            return (key, True) if is_ok else (None, False)
         except UnicodeDecodeError:
-            return False
+            print('wrong password')
+            return (None, False)
 
     def create_item(self, name):
         try:
@@ -63,13 +76,13 @@ class DataBase:
             print(f'item {name} not exist')
             return -1
 
-    def create_account(self, item_name, login, password):
+    def create_account(self, item_name, login):
         try:
             item_id = self.create_item(item_name)
             if item_id == -1:
                 item_id = self.get_item_id(item_name)
             self._query.execute(
-                'INSERT INTO accounts (login, password, item_id) VALUES (?, ?, ?)', (login, password, item_id))
+                'INSERT INTO accounts (login, item_id) VALUES (?, ?)', (login, item_id))
             self._connect.commit()
             print(f'create account {login} in {item_name}')
             return self.get_account_id(item_name, login)
@@ -85,6 +98,16 @@ class DataBase:
         except:
             print(f'login {login} not exist')
             return -1
+
+    def edit_password(self, item: str, login: str, password: bytearray):
+        item_id = self.get_item_id(item)
+        account_id = self.get_account_id(item, login)
+        if item_id != -1 and account_id != -1:
+            self._query.execute(
+                'UPDATE accounts SET password=? WHERE id=? AND item_id=?', (password, account_id, item_id))
+            self._connect.commit()
+            print(
+                f'password is set for login {login} in {item} item')
 
 
 def load():

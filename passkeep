@@ -5,25 +5,35 @@ import input
 import crypto
 import argparse
 
-db = database.load() if database.is_exist() else database.create()
 
-parser = argparse.ArgumentParser(
-    prog='passkeep', description='passkeep is tool to store and manage passwords')
-parser.add_argument('-a', '--add', action='store', type=str,
-                    help='add item to database')
-parser.add_argument('-l', '--login', action='store', type=str,
-                    help='login bind to item')
-parser.add_argument('-g', '--generate', action='store_true',
-                    help='generate password')
-args = parser.parse_args()
-if args.add and args.login:
-    if args.generate:
-        password = crypto.generate_password()
-        if db.create_account(args.add, args.login, password) != -1:
-            print(f'generated password: {password}')
+def arg_add_login(db: database.DataBase, args):
+    main_password = input.enter_password()
+    key, password_ok = db.is_password_correct(main_password)
+    if password_ok:
+        password = crypto.generate_password() if args.generate else input.enter_new_password()
+        if db.create_account(args.add, args.login) != -1:
+            db.edit_password(args.add, args.login, key.encrypt(password))
+
+
+def main():
+    db = database.load() if database.is_exist() else database.create()
+
+    parser = argparse.ArgumentParser(
+        prog='passkeep', description='passkeep is tool to store and manage passwords')
+    parser.add_argument('-a', '--add', action='store', type=str,
+                        help='add item to database')
+    parser.add_argument('-l', '--login', action='store', type=str,
+                        help='login bind to item')
+    parser.add_argument('-g', '--generate', action='store_true',
+                        help='generate password')
+    args = parser.parse_args()
+    if args.add and args.login:
+        arg_add_login(db, args)
+    elif args.add:
+        db.create_item(args.add)
     else:
-        db.create_account(args.add, args.login, input.enter_new_password())
-elif args.add:
-    db.create_item(args.add)
-else:
-    print(parser.print_help())
+        print(parser.print_help())
+
+
+if __name__ == "__main__":
+    main()

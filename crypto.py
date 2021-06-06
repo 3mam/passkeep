@@ -16,14 +16,14 @@ class Key:
 
     def encrypt(self, text):
         cipher = AES.new(self._private_key, AES.MODE_GCM, nonce=self._salt)
-        return cipher.encrypt(bytes(text, 'utf-8'))
+        return cipher.encrypt(text)
 
     def decrypt(self, encrypt_text):
         cipher = AES.new(self._private_key, AES.MODE_GCM, nonce=self._salt)
         return cipher.decrypt(encrypt_text)
 
 
-def generate_password():
+def generate_password()->bytearray:
     chars = [
         'q', 'w', 'r', 't', 'y', 'u', 'i', 'o', 'p',
         'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
@@ -38,4 +38,6 @@ def generate_password():
         chars[randint(0, len(chars)-1)]
         for i in range(20)
     ]
-    return ''.join(new_password)
+    password_str = ''.join(new_password)
+    print(f'generated password: {password_str}')
+    return password_str.encode('utf-8')
