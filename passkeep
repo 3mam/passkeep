@@ -4,16 +4,30 @@ import database
 import input
 import crypto
 import argparse
+import pyperclip
 
 
-def arg_add_login(db: database.DataBase, args):
-    if db.create_account(args.item, args.login) == 0:
-        return
+def arg_edit_password(db: database.DataBase, args):
     main_password = input.enter_password()
     key, password_ok = db.is_password_correct(main_password)
     if password_ok:
         password = crypto.generate_password() if args.generate else input.enter_new_password()
         db.edit_password(args.item, args.login, key.encrypt(password))
+
+
+def arg_add_login(db: database.DataBase, args):
+    if db.create_account(args.item, args.login) == 0:
+        return
+    arg_edit_password(db, args)
+
+
+def arg_read_password(db: database.DataBase, args):
+    main_password = input.enter_password()
+    key, password_ok = db.is_password_correct(main_password)
+    if password_ok:
+        password = key.encrypt(db.read_password(args.item, args.login)).decode()
+        print(f'password is {password}')
+        pyperclip.copy(password)
 
 
 def main():
@@ -27,10 +41,14 @@ def main():
                         help='login bind to item')
     parser.add_argument('-g', '--generate', action='store_true',
                         help='generate password')
+    parser.add_argument('-p', '--password', action='store_true',
+                        help='edit password')
+    parser.add_argument('-r', '--read', action='store_true',
+                        help='read password')
     parser.add_argument('-i', '--item', action='store', type=str,
                         help='item name')
     parser.add_argument('-e', '--edit', action='store', type=str,
-                        help='edit item, login or password')
+                        help='edit item or login')
     args = parser.parse_args()
     if args.add:
         if args.login and args.item:
@@ -45,6 +63,10 @@ def main():
             db.edit_account(args.item, args.login, args.edit)
         elif args.item:
             db.edit_item(args.item, args.edit)
+    elif args.item and args.login and args.password:
+        arg_edit_password(db, args)
+    elif args.read and args.login and args.item:
+        arg_read_password(db, args)
     else:
         print(parser.print_help())
 

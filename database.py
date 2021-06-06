@@ -125,6 +125,12 @@ class DataBase:
             print(
                 f'password is set for login {login} in {item} item')
 
+    def read_password(self, item: str, login: str)->bytearray:
+        item_id = self.get_item_id(item)
+        login_id = self.get_account_id(item, login)
+        return self._query.execute(
+            'SELECT password FROM accounts WHERE id=? AND item_id=?', (login_id, item_id)).fetchone()[0]
+
 
 def load():
     return DataBase()
