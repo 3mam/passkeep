@@ -1,4 +1,4 @@
-simple cli app for manager password write in python
+simple cli app write in python for manager password 
 ```
 dependencies
   pip install pycryptodome
